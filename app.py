@@ -34,6 +34,7 @@ injured_people = st.slider('Number of people injured', 0, 19)
 st.map(data.query('injured_persons >= @injured_people')[['latitude', 'longitude']].dropna(how='any'))
 
 st.header('Hw many collisions occur during a given time period of a day?')
+original_data = data
 hour = st.sidebar.slider('Hours to look at', 0, 23)
 data = data[data['date/time'].dt.hour == hour]
 
@@ -69,6 +70,17 @@ hist = np.histogram(filtered['date/time'].dt.minute, bins=60, range=(0, 60))[0]
 chart_data = pd.DataFrame({'minute': range(60), 'crashes': hist})
 fig = px.bar(chart_data, x='minute', y='crashes', hover_data=['minute', 'crashes'], height=400)
 st.write(fig)
+
+st.header('Top 5 dangerous streets')
+select = st.selectbox('Affected type:', ['Pedestrians', 'Cyclists', 'Motorists'])
+
+if select == 'Pedestrians':
+  st.write(original_data.query('injured_pedestrians >= 1')[['on_street_name', 'injured_pedestrians']].sort_values(by=['injured_pedestrians'], ascending=False).dropna(how='any')[:5])
+elif select == 'Cyclists':
+  st.write(original_data.query('injured_cyclists >= 1')[['on_street_name', 'injured_cyclists']].sort_values(by=['injured_cyclists'], ascending=False).dropna(how='any')[:5])
+else:
+  st.write(original_data.query('injured_motorists >= 1')[['on_street_name', 'injured_motorists']].sort_values(by=['injured_motorists'], ascending=False).dropna(how='any')[:5])
+
 
 if st.checkbox('Show Raw Data 📝', False):
   st.subheader('Raw Data')
